@@ -1,0 +1,12 @@
+version: "3.9"
+
+services: 
+  postgres-task:
+    image: postgres:alpine3.20
+    container_name: "zhavia_postgres_task"
+    ports: 
+      - 5433:5432
+    environment:
+      POSTGRES_USER: ${DB_USER_POSTGRESS}
+      POSTGRES_PASSWORD: ${DB_PASS_POSTGRESS}
+      POSTGRES_DB: ${DB_DATABASE_POSTGRESS}
