@@ -7,6 +7,7 @@ WORKDIR /usr/src/app
 COPY pnpm-lock.yaml package.json ./
 
 RUN pnpm install
+RUN pnpm prisma db push
 
 COPY .env ./
 COPY . .
