@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, TaskStatus } from '@prisma/client';
 import { HttpStatus, Injectable } from '@nestjs/common';
 
 import { QueryListDto } from './dtos/params.dto';
@@ -14,9 +14,22 @@ export class TaskService {
   ) {}
 
   async create(data: Prisma.TaskCreateInput) {
-    await this.prismaService.task.create({
-      data,
-    });
+    const statusLowerCase = data.status.toLowerCase();
+
+    let taskStatus: TaskStatus;
+    if (statusLowerCase === 'pending') {
+      taskStatus = TaskStatus.PENDING;
+    } else if (statusLowerCase === 'in_progress') {
+      taskStatus = TaskStatus.IN_PROGRESS;
+    } else if (statusLowerCase === 'completed') {
+      taskStatus = TaskStatus.COMPLETED;
+    } else {
+      throw new AppException('Invalid status.', HttpStatus.BAD_REQUEST);
+    }
+
+    data.status = taskStatus;
+
+    await this.prismaService.task.create({ data });
   }
 
   async findAll({ name, status, id, limit, page }: QueryListDto) {
@@ -72,6 +85,22 @@ export class TaskService {
 
   async update(id: string, data: Prisma.TaskUpdateInput, userId: string) {
     await this.findOne(id);
+    if (data.status && typeof data.status === 'string') {
+      const statusLowerCase = data.status.toLowerCase();
+
+      let taskStatus: TaskStatus;
+      if (statusLowerCase === 'pending') {
+        taskStatus = TaskStatus.PENDING;
+      } else if (statusLowerCase === 'in_progress') {
+        taskStatus = TaskStatus.IN_PROGRESS;
+      } else if (statusLowerCase === 'completed') {
+        taskStatus = TaskStatus.COMPLETED;
+      } else {
+        throw new AppException('Invalid status.', HttpStatus.BAD_REQUEST);
+      }
+
+      data.status = taskStatus;
+    }
 
     const dataUpdated = await this.prismaService.task.update({
       where: { id },
